@@ -8,8 +8,8 @@
 # include <sys/wait.h>
 # include <errno.h>
 
+# include "define.h"
 # include "parseline.c"
-
 
 # define NO_ERROR 0
 

@@ -1,15 +1,13 @@
-# include <stdlib.h>
-# include <stdio.h>
-# include <string.h>
-
-
-# define COMM_LEN_MAX 512
-# define PIPE_ARG_MAX 10 
-# define COMM_ARG_MAX 10
-# define STAGE_MAX 512
-# define LARGE_SIZE 4092
+/* This file contains implementation for parsing command line
+ * so that we can evetually use properly pipes and execs */
 
 void zero_buf(char buf[COMM_LEN_MAX]){
+        int count;
+        for (count = 0; count < COMM_LEN_MAX; count++)
+        buf[count] = 0;
+}
+
+void zero_buf2(Stage *buf[COMM_LEN_MAX]){
         int count;
         for (count = 0; count < COMM_LEN_MAX; count++)
         buf[count] = 0;
@@ -47,6 +45,48 @@ void print_stage(int stage, char *total,
 	}
 }
 
+void add_stage(Stage* array[COMM_LEN_MAX], int stage, char *total, 
+        char *input, char *output, int argc, char *argv){
+
+	Stage *new = malloc(sizeof(Stage));
+	int *new_int = malloc(sizeof(int));
+	char *new_total = malloc(sizeof(total));
+	char *new_input = malloc(sizeof(input));
+	char *new_output = malloc(sizeof(output));
+	int *new_argc = malloc(sizeof(int));
+	char *new_argv = malloc(sizeof(argv));
+
+	/* error checking */	
+	if (new == NULL || new_int == NULL || new_total == NULL ||
+	    new_input == NULL || new_output == NULL || 
+	    new_argc == NULL || new_argv == NULL){
+	perror("");
+	exit(EXIT_FAILURE);
+	}
+
+	/* assigning to Stage*/
+	*new_int = stage;
+	new -> number = new_int;
+	
+	strcpy(new_total, total);
+	new -> total = new_total;
+
+	strcpy(new_input, input);
+	new -> input = new_input;
+
+	strcpy(new_output, output);
+	new -> output = new_output;
+	
+	*new_argc = argc;
+	new -> argc = new_argc;	
+
+	strcpy(new_argv, argv);
+	new -> argv = new_argv;
+
+	array[stage] = new;
+
+}
+
 
 int parseline(int read_char, int *children_p){
 	int count;
@@ -55,7 +95,9 @@ int parseline(int read_char, int *children_p){
 	int numb_pipes = 1; /* #pipes = #| + 1*/
 	char current = '\0';
 	char temp[2];
+	Stage *stageArr[COMM_LEN_MAX];
 	zero_buf(arg);
+	zero_buf2(stageArr);
 
 	/* read first char when checking on mush */
 	temp[0] = (char) read_char;
@@ -142,6 +184,8 @@ int parseline(int read_char, int *children_p){
 		if ( token == NULL){
 			print_stage(count, total, input, output, 
 				pass_argc, pass_argv);			
+			add_stage(stageArr, count, total, input,
+				 output, pass_argc, pass_argv);
 			break;	}
 
 		/*Input redirection*/
@@ -202,7 +246,9 @@ int parseline(int read_char, int *children_p){
 		else if ( strcmp(token, "|") == 0){
 		 print_stage(count, total, input, output,
                                 pass_argc, pass_argv);
-                        break; 
+        	 add_stage(stageArr, count, total, input, 
+                                 output, pass_argc, pass_argv); 
+	               break; 
 		}
 						
 		/*Extra arguments*/		

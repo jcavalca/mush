@@ -5,6 +5,8 @@
 # include <sys/wait.h>
 # include <unistd.h>
 
+int children = 0;
+
 void usage(char *name){
 	fprintf(stderr, "usage:  %s <stages>\n", name);
 	exit(EXIT_FAILURE);
@@ -21,18 +23,14 @@ void telephone(int id){
 		putchar(c);
 }
 
-int main(int argc, char *argv[]){
+int pipe_stages(Stage *stageArr[COMM_LEN_MAX], int numb_pipes){
 
 	int num, i;
 	char *end;
 	int old[2], next[2];
 	pid_t child;
 	
-	if (argc != 2)
-		usage(argv[0]);
-	num = strtol(argv[1], &end, 0);
-	if (num <= 0 || *end)
-		usage(argv[0]);
+	num = numb_pipes;
 	if (pipe(old)){
 		perror("pipe");
 		exit(EXIT_FAILURE);
@@ -49,6 +47,7 @@ int main(int argc, char *argv[]){
 
 	  if (!(child = fork())){
     	  /* child */
+	    children++;
 	    if( -1 == dup2(old[READ_END], STDIN_FILENO) ){
 		perror("dup2 old");	
 	    }
