@@ -7,14 +7,16 @@
 # include <signal.h>
 # include <sys/wait.h>
 # include <errno.h>
+# include <sys/stat.h>
+# include <fcntl.h>
+# include <sys/types.h>
 
 # include "define.h"
+# include "pipe.c"
 # include "parseline.c"
 
 # define NO_ERROR 0
 
-
-int children = 0;
 
 void exit_gracefully(){
 
@@ -24,7 +26,7 @@ void exit_gracefully(){
 	    exit(EXIT_FAILURE);
 	  }
 	}
-	
+        fprintf(stderr, "\n");	
 	exit(EXIT_SUCCESS);
 }
 
@@ -32,7 +34,7 @@ void read_from_stdin(){
         int current_char;
         while ( (current_char = getchar()) != EOF){
 
-        parseline(current_char, &children);
+        parseline(current_char);
 	
 	fprintf(stderr, "8-P ");
         }

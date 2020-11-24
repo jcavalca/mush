@@ -1,9 +1,6 @@
-# include <stdio.h>
-# include <stdlib.h>
-# include <string.h>
-# include <sys/types.h>
-# include <sys/wait.h>
-# include <unistd.h>
+/* This file contains the pipelining and execing portion of mush.
+ * Important to note that this implementation was built upon changing 
+ * the pipeline lecture example.*/
 
 int children = 0;
 
@@ -17,7 +14,7 @@ void usage(char *name){
 # define MSG "Boo\n"
 
 void telephone(int id){
-
+	int c;
 	printf("This is process %d (pid: %d).\n", id, getpid());
 	while((EOF != (c=getchar())) )
 		putchar(c);
@@ -26,7 +23,6 @@ void telephone(int id){
 int pipe_stages(Stage *stageArr[COMM_LEN_MAX], int numb_pipes){
 
 	int num, i;
-	char *end;
 	int old[2], next[2];
 	pid_t child;
 	
@@ -47,12 +43,29 @@ int pipe_stages(Stage *stageArr[COMM_LEN_MAX], int numb_pipes){
 
 	  if (!(child = fork())){
     	  /* child */
-	    children++;
-	    if( -1 == dup2(old[READ_END], STDIN_FILENO) ){
+	    int fd_in, fd_out;
+	    fd_in = STDIN_FILENO; /* default */
+
+  	    /* input redirection (needs to be in the first stage) */
+     	    if (children == 0 && strcmp(stageArr[children] -> input, "original stdin") != 0){
+		fd_in = open(stageArr[children] -> input, O_RDONLY);
+		if (fd_in == -1){
+		   perror("open in");
+		   exit(EXIT_FAILURE);
+		}
+	    }
+	
+	    if( -1 == dup2(old[READ_END], fd_in) ){
 		perror("dup2 old");	
 	    }
+
 	    if( i < num - 1){
-              if ( -1 == dup2(next[ WRITE_END], STDOUT_FILENO)){
+	      /* output redirection */
+	      if (-1 == (fd_out = open(stageArr[children] -> output, O_WRONLY))){
+		fd_out = STDOUT_FILENO;
+	      }
+
+              if ( -1 == dup2(next[WRITE_END], fd_out)){
 		perror("dup2 new");
 		}
 	    }
@@ -63,6 +76,7 @@ int pipe_stages(Stage *stageArr[COMM_LEN_MAX], int numb_pipes){
 	     close(next[READ_END]);		
   	     close(next[WRITE_END]);
 	     telephone(i);
+	     children++;
 	     exit(EXIT_SUCCESS);	
 	}
 	  /* parent */	

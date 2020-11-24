@@ -88,7 +88,7 @@ void add_stage(Stage* array[COMM_LEN_MAX], int stage, char *total,
 }
 
 
-int parseline(int read_char, int *children_p){
+int parseline(int read_char){
 	int count;
 	char arg[COMM_LEN_MAX];
 	int sum = 0;
@@ -271,8 +271,8 @@ int parseline(int read_char, int *children_p){
 		}
 		
         }
-
-	return 0;
+	pipe_stages(stageArr, numb_pipes);
+	return numb_pipes;
 }
 
 
