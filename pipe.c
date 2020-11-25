@@ -14,7 +14,6 @@ void usage(char *name){
 }
 
 void exec_command(int stage, int *argc, char *argv){
-	int my_argc = *argc;
 	int count, file_off = 0;
 	char file[COMM_LEN_MAX];
 	int words = 0;

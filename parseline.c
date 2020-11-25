@@ -120,7 +120,10 @@ int parseline(int read_char){
 	if (arg[count] == '|')
 	numb_pipes++;
 	}	
-	
+	if (numb_pipes > PIPE_ARG_MAX){
+	fprintf(stderr, "pipeline too deep\n");
+ 	return 0;
+	} 	
 	/*Parsing ...*/
 	/*For each stage do*/
 	for (count = 0; count < numb_pipes; count++){
@@ -136,7 +139,7 @@ int parseline(int read_char){
 		/*Empty pipe*/	
 	if (token == NULL || strcmp(token, "|") == 0){
 	fprintf(stderr, "invalid null command\n");
-	exit(EXIT_FAILURE);
+	return 0;
 	}
 
 		/*Input and Output*/
@@ -195,7 +198,7 @@ int parseline(int read_char){
 		if (strcmp(input, gen_input) != 0 && 
 			strcmp(input, pipe_input) != 0){
 		fprintf(stderr, "cmd: bad input redirection\n");
-		exit(EXIT_FAILURE);
+		return 0;
 		}
 		zero_buf(input);
 		strcpy(input, strtok(NULL, " "));
@@ -203,13 +206,13 @@ int parseline(int read_char){
 		if (input == NULL || strcmp(input, "<") == 0 ||
 		strcmp(input, ">") == 0 || strcmp(input, "|") == 0){
 		fprintf(stderr, "cmd: bad input redirection\n");
-                exit(EXIT_FAILURE);
+                return 0;
 		}
 
 			/*Both input redirection and a pipe in*/
 		if (count > 0){
 		fprintf(stderr, "cmd: ambigous input\n");
-                exit(EXIT_FAILURE);
+                return 0;
 		}
 		strcat(total, " < ");
 		strcat(total, input);
@@ -222,7 +225,7 @@ int parseline(int read_char){
                 if (strcmp(output, gen_output) != 0 && 
 			strcmp(output, pipe_output) != 0){
                 fprintf(stderr, "cmd: bad output redirection\n");
-                exit(EXIT_FAILURE);
+                return 0;
                 }
 		zero_buf(output);
                 strcpy(output, strtok(NULL, " "));
@@ -230,13 +233,13 @@ int parseline(int read_char){
                 if (output == NULL || strcmp(output, "<") == 0 ||
                 strcmp(output, ">") == 0 || strcmp(output, "|") == 0){
                 fprintf(stderr, "cmd: bad output redirection\n");
-                exit(EXIT_FAILURE);
+                return 0;
                 }
 
                 	/*Both output redirection and a pipe out*/
                 if (count == numb_pipes - 2){
                 fprintf(stderr, "cmd: ambigous output\n");
-                exit(EXIT_FAILURE);
+                return 0;
                 }
 		strcat(total, " > ");
                 strcat(total, output);
@@ -257,16 +260,12 @@ int parseline(int read_char){
 		elements++;
 		if (pass_argc >= COMM_ARG_MAX){
 		fprintf(stderr, "cmd: too many arguments\n");
-		exit(EXIT_FAILURE);	
+		return 0;	
 		}
 		strcat(pass_argv, " ");
 		strcat(pass_argv, token);
 		strcat(total, " ");
 		strcat(total, token);
-		}
-		if (elements >= PIPE_ARG_MAX){
-		fprintf(stderr, "pipeline too deep\n");
-                exit(EXIT_FAILURE);
 		}
 		}
 		
