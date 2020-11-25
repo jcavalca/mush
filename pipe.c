@@ -2,6 +2,10 @@
  * Important to note that this implementation was built upon changing 
  * the pipeline lecture example.*/
 
+# define WRITE_END 1
+# define READ_END 0
+# define MSG ""
+
 int children = 0;
 
 void usage(char *name){
@@ -9,15 +13,47 @@ void usage(char *name){
 	exit(EXIT_FAILURE);
 }
 
-# define WRITE_END 1
-# define READ_END 0
-# define MSG "Boo\n"
-
-void telephone(int id){
-	int c;
-	printf("This is process %d (pid: %d).\n", id, getpid());
-	while((EOF != (c=getchar())) )
-		putchar(c);
+void exec_command(int stage, int *argc, char *argv){
+	int my_argc = *argc;
+	int count, file_off = 0;
+	char file[COMM_LEN_MAX];
+	int words = 0;
+	int len = strlen(argv);
+	char main_argv[COMM_LEN_MAX];
+	char *array[COMM_LEN_MAX];
+	if (array == NULL)
+	usage("malloc");
+	for (count = 0; count < len; count++){
+           if (argv[count] == ' '){
+		char *a = calloc(COMM_LEN_MAX, 1);
+		if (a == NULL)
+		  usage("calloc");
+		strcpy(a, file);
+		array[words ] = a;
+        	if(words == 0){
+		strcpy(main_argv, file);
+		}
+	        zero_buf(file);
+                file_off = 0;
+		words++;
+                
+           }else{
+        	file[file_off] = argv[count];
+        	file_off++;
+		if (count == len - 1){
+		      char a[COMM_LEN_MAX];
+        	      strcpy(a, file);
+        	      array[words ] = a;
+		   if (words == 0){
+		        strcpy(main_argv, file);
+			}
+		words++;
+		}
+           }
+	}
+	array[words] = NULL;
+	if (-1 == execvp(main_argv, array))
+	      perror("execvp");
 }
 
 int pipe_stages(Stage *stageArr[COMM_LEN_MAX], int numb_pipes){
@@ -31,8 +67,6 @@ int pipe_stages(Stage *stageArr[COMM_LEN_MAX], int numb_pipes){
 		perror("pipe");
 		exit(EXIT_FAILURE);
 	}
-	write(old[WRITE_END], MSG, strlen(MSG));
-
 	for (i = 0; i < num; i++){
 	  if (i < num - 1){
 	    if (pipe(next)){	/* create new pipe */
@@ -75,8 +109,7 @@ int pipe_stages(Stage *stageArr[COMM_LEN_MAX], int numb_pipes){
 	     close(old[WRITE_END]);
 	     close(next[READ_END]);		
   	     close(next[WRITE_END]);
-	     telephone(i);
-	     children++;
+	     exec_command(i, stageArr[i] -> argc, stageArr[i] -> argv);
 	     exit(EXIT_SUCCESS);	
 	}
 	  /* parent */	

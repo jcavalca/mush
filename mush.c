@@ -12,6 +12,7 @@
 # include <sys/types.h>
 
 # include "define.h"
+# include "share.c"
 # include "pipe.c"
 # include "parseline.c"
 
@@ -61,8 +62,6 @@ void handler(int signum) {
 
 int main(int argc, char *argv[]){	
 
-
-	
 	struct sigaction sa;
 		
 	 /* first set up the handler */
@@ -75,5 +74,5 @@ int main(int argc, char *argv[]){
 	}
 	fprintf(stderr, "8-P ");
 	read_from_stdin();	
-	exit(EXIT_SUCCESS);	
+	return 0;	
 } 

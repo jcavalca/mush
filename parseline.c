@@ -1,6 +1,6 @@
 /* This file contains implementation for parsing command line
  * so that we can evetually use properly pipes and execs */
-
+/*
 void zero_buf(char buf[COMM_LEN_MAX]){
         int count;
         for (count = 0; count < COMM_LEN_MAX; count++)
@@ -12,7 +12,7 @@ void zero_buf2(Stage *buf[COMM_LEN_MAX]){
         for (count = 0; count < COMM_LEN_MAX; count++)
         buf[count] = 0;
 }
-
+*/
 void print_stage(int stage, char *total, 
 	char *input, char *output, int argc, char *argv){
 	int count;
@@ -182,8 +182,8 @@ int parseline(int read_char){
 		token = strtok(NULL, " ");
 		/*End of command-line*/
 		if ( token == NULL){
-			print_stage(count, total, input, output, 
-				pass_argc, pass_argv);			
+			/*print_stage(count, total, input, output, 
+				pass_argc, pass_argv);	*/		
 			add_stage(stageArr, count, total, input,
 				 output, pass_argc, pass_argv);
 			break;	}
@@ -244,8 +244,8 @@ int parseline(int read_char){
 
 		/*New pipe*/
 		else if ( strcmp(token, "|") == 0){
-		 print_stage(count, total, input, output,
-                                pass_argc, pass_argv);
+		/* print_stage(count, total, input, output,
+                                pass_argc, pass_argv);*/
         	 add_stage(stageArr, count, total, input, 
                                  output, pass_argc, pass_argv); 
 	               break; 
