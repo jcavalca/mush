@@ -8,11 +8,7 @@
 
 int children = 0;
 
-void usage(char *name){
-	fprintf(stderr, "usage:  %s <stages>\n", name);
-	exit(EXIT_FAILURE);
-}
-
+/*
 void exec_command(int stage, int *argc, char *argv){
 	int count, file_off = 0;
 	char file[COMM_LEN_MAX];
@@ -20,6 +16,7 @@ void exec_command(int stage, int *argc, char *argv){
 	int len = strlen(argv);
 	char main_argv[COMM_LEN_MAX];
 	char *array[COMM_LEN_MAX];
+	
 	if (array == NULL)
 	usage("malloc");
 	for (count = 0; count < len; count++){
@@ -52,9 +49,9 @@ void exec_command(int stage, int *argc, char *argv){
 	}
 	array[words] = NULL;
 	if (-1 == execvp(main_argv, array))
-	      perror("execvp");
+		perror(main_argv);
 }
-
+*/
 int pipe_stages(Stage *stageArr[COMM_LEN_MAX], int numb_pipes){
 
 	int num, i;
@@ -78,38 +75,24 @@ int pipe_stages(Stage *stageArr[COMM_LEN_MAX], int numb_pipes){
     	  /* child */
 	    int fd_in, fd_out;
 	    fd_in = STDIN_FILENO; /* default */
-
-  	    /* input redirection (needs to be in the first stage) */
-     	    if (children == 0 && strcmp(stageArr[children] -> input, "original stdin") != 0){
-		fd_in = open(stageArr[children] -> input, O_RDONLY);
-		if (fd_in == -1){
-		   perror("open in");
-		   exit(EXIT_FAILURE);
-		}
-	    }
-	
+	    fd_out = STDOUT_FILENO;
 	    if( -1 == dup2(old[READ_END], fd_in) ){
 		perror("dup2 old");	
 	    }
 
 	    if( i < num - 1){
 	      /* output redirection */
-	      if (-1 == (fd_out = open(stageArr[children] -> output, O_WRONLY))){
-		fd_out = STDOUT_FILENO;
-	      }
-
               if ( -1 == dup2(next[WRITE_END], fd_out)){
 		perror("dup2 new");
 		}
 	    }
-
+	    /* io_redirection(i, stageArr[i] -> input, stageArr[i] -> output);*/
 	     /* cleaning parent's opened fd's */
 	     close(old[READ_END]);
 	     close(old[WRITE_END]);
 	     close(next[READ_END]);		
   	     close(next[WRITE_END]);
 	     exec_command(i, stageArr[i] -> argc, stageArr[i] -> argv);
-	     exit(EXIT_SUCCESS);	
 	}
 	  /* parent */	
 	  close(old[READ_END]);
@@ -124,8 +107,10 @@ int pipe_stages(Stage *stageArr[COMM_LEN_MAX], int numb_pipes){
 	    perror("wait");
 	  }
 	}
-
-	return 0;
+	if (children != num)
+	   return -1;
+	else
+	   return 0;
 }
 
 

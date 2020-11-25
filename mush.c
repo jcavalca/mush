@@ -13,6 +13,7 @@
 
 # include "define.h"
 # include "share.c"
+# include "exec.c"
 # include "pipe.c"
 # include "parseline.c"
 

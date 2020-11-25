@@ -1,49 +1,5 @@
 /* This file contains implementation for parsing command line
  * so that we can evetually use properly pipes and execs */
-/*
-void zero_buf(char buf[COMM_LEN_MAX]){
-        int count;
-        for (count = 0; count < COMM_LEN_MAX; count++)
-        buf[count] = 0;
-}
-
-void zero_buf2(Stage *buf[COMM_LEN_MAX]){
-        int count;
-        for (count = 0; count < COMM_LEN_MAX; count++)
-        buf[count] = 0;
-}
-*/
-void print_stage(int stage, char *total, 
-	char *input, char *output, int argc, char *argv){
-	int count;
-	char file[COMM_LEN_MAX];
-	int file_off = 0;
-	zero_buf(file);
-	printf("\n");	
-	printf("--------\n");
-	printf("Stage %d: \"%s\"\n", stage, total);
-	printf("--------\n");
-	printf("%10s: %s\n", "input", input);
-	printf("%10s: %s\n", "output", output);
-	printf("%10s: %d\n", "argc", argc);
-	printf("%10s: ", "argv");
-	/*When argc > 1*/
-	for (count = 0; count < strlen(argv); count++){
-	if (argv[count] == ' '){
-		if (count != strlen(argv) - 1)
-		printf("\"%s\",", file);
-		else
-		printf("\"%s\"\n", file);
-		zero_buf(file);
-		file_off = 0;
-		}
-	else{
-	file[file_off] = argv[count];
-	file_off++;
-	if (count == strlen(argv) - 1)
-	printf("\"%s\"\n", file);}
-	}
-}
 
 void add_stage(Stage* array[COMM_LEN_MAX], int stage, char *total, 
         char *input, char *output, int argc, char *argv){
@@ -95,6 +51,7 @@ int parseline(int read_char){
 	int numb_pipes = 1; /* #pipes = #| + 1*/
 	char current = '\0';
 	char temp[2];
+	char file[COMM_LEN_MAX];
 	Stage *stageArr[COMM_LEN_MAX];
 	zero_buf(arg);
 	zero_buf2(stageArr);
@@ -132,8 +89,10 @@ int parseline(int read_char){
 	 pipe_input[COMM_LEN_MAX], pipe_output[COMM_LEN_MAX],
 	input[COMM_LEN_MAX], output[COMM_LEN_MAX];
 	int pass_argc = 1, elements = 1;
-	if (count == 0)
+	if (count == 0){
       	token = strtok(arg, " ");
+	strcpy(file, token);
+	}
 	else
 	token = strtok(NULL, " ");
 		/*Empty pipe*/	
@@ -258,7 +217,7 @@ int parseline(int read_char){
 		else {
 		pass_argc++;
 		elements++;
-		if (pass_argc >= COMM_ARG_MAX){
+		if (pass_argc - 1> COMM_ARG_MAX){ /* excludes file */
 		fprintf(stderr, "cmd: too many arguments\n");
 		return 0;	
 		}
@@ -270,8 +229,15 @@ int parseline(int read_char){
 		}
 		
         }
-	pipe_stages(stageArr, numb_pipes);
+	if (strcmp(file, "cd") == 0){
+		exec_cd(stageArr[0] -> argv);
+		return 0; 
+	}
+	
+	if (pipe_stages(stageArr, numb_pipes) != -1)
 	return numb_pipes;
+	else
+	return 0;
 }
 
 
