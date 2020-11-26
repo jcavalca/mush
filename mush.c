@@ -40,7 +40,12 @@ void exit_gracefully(){
 void read_from_stdin(){
         int current_char;
         while ( (current_char = getchar()) != EOF){
-
+	   while (current_char == NEW_LINE || current_char == CARRIAGE_RET){
+		fprintf(stderr, "8-P ");
+		current_char = getchar();
+	   }
+	   if (current_char == EOF)
+	       break;
            parseline(current_char);
 	   if (interrupt == FALSE){
       	       fprintf(stderr, "8-P ");}

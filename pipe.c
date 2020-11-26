@@ -2,8 +2,6 @@
  * Important to note that this implementation was built upon changing 
  * the pipeline lecture example.*/
 
-# define WRITE_END 1
-# define READ_END 0
 
 
 int input_redirection(int stage, char *input){
@@ -48,11 +46,10 @@ int pipe_stages(Stage *stageArr[COMM_LEN_MAX], int numb_pipes){
           children++;
 	  if (!(child = fork())){
     	  /* child */
-	    int fd_in, fd_out;
+	    int fd_in;
 	    int test_in, test_out;
 	    int redir_in = FALSE;
 	    fd_in = STDIN_FILENO; /* default */
-	    fd_out = STDOUT_FILENO;
 
 	    /* read end */
 	    if (TRUE == (test_in = input_redirection(i, stageArr[i] -> input)))
