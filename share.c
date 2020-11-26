@@ -1,5 +1,4 @@
-
-
+FILE *mush_input;
 int children = 0;
 
 

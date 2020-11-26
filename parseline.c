@@ -61,7 +61,7 @@ int parseline(int read_char){
         temp[1] = '\0';	
 	strcat(arg, temp);
 	
-	while ( (current = fgetc(stdin)) != '\n'){
+	while ( (current = fgetc(mush_input)) != '\n'){
 	  sum++;	
 	  if (sum > COMM_LEN_MAX){
 	    fprintf(stderr, "command too deep");

@@ -20,6 +20,7 @@
 
 
 int interrupt = FALSE;
+int file_in = FALSE, file_out = FALSE;
 
 void wait_gracefully(){
        while (children--){
@@ -39,16 +40,18 @@ void exit_gracefully(){
 
 void read_from_stdin(){
         int current_char;
-        while ( (current_char = getchar()) != EOF){
+        while ( (current_char = fgetc(mush_input)) != EOF){
 	   while (current_char == NEW_LINE || current_char == CARRIAGE_RET){
+		if (file_in == FALSE && file_out == FALSE)
 		fprintf(stderr, "8-P ");
-		current_char = getchar();
+		current_char = fgetc(mush_input);
 	   }
 	   if (current_char == EOF)
 	       break;
            parseline(current_char);
 	   if (interrupt == FALSE){
-      	       fprintf(stderr, "8-P ");}
+      	      if (file_in == FALSE && file_out == FALSE)
+	      fprintf(stderr, "8-P ");}
 	   else{interrupt = TRUE;}
 
 
@@ -71,15 +74,44 @@ void read_from_stdin(){
 void handler(int signum) {
 	if (signum == SIGINT){
 	  /* catch it and continue*/
+	  if (file_in == FALSE && file_out == FALSE)
 	  fprintf(stderr, "\n8-P ");
+	  else{
+	  fprintf(stderr, "\n");
+	  }
 	  interrupt = TRUE; 
 	}
+}
+
+void command_parser(int argc, char *argv[], int *in_ptr, int *out_ptr){ 
+	if (!isatty(STDIN_FILENO))
+           *in_ptr = TRUE;
+
+        if (!isatty(STDOUT_FILENO))
+            *out_ptr = TRUE;
+
+	if (argc == 2){
+	    if (!*in_ptr){      
+	        *in_ptr = TRUE;
+		if (NULL == (mush_input = fopen(argv[1], "r"))){
+		     fprintf(stderr, "could not open %s\n", argv[1]);
+		     exit(EXIT_FAILURE);
+		}
+	    }
+	}
+	else{
+		if ( argc > 2)
+		fprintf(stderr, "Usage: mush (input file)\n");
+	}
+
+
+
 }
 
 int main(int argc, char *argv[]){	
 
 	struct sigaction sa;
-	 /* first set up the handler */
+	 /* set up handler for ^C */
         sa.sa_handler = handler;
         sigemptyset(&sa.sa_mask);
         sa.sa_flags = 0;
@@ -87,6 +119,9 @@ int main(int argc, char *argv[]){
           perror("sigaction");
           exit(EXIT_FAILURE);
 	}
+	mush_input = stdin; /* default */
+	command_parser(argc, argv, &file_in, &file_out);
+	if (file_in == FALSE && file_out == FALSE)
 	fprintf(stderr, "8-P ");
 	read_from_stdin();	
 	return 0;	
