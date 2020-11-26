@@ -1,3 +1,6 @@
+int children = 0;
+
+
 void usage(char *name){
 	perror(name);
 	exit(EXIT_FAILURE);

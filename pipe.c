@@ -4,54 +4,19 @@
 
 # define WRITE_END 1
 # define READ_END 0
-# define MSG ""
 
-int children = 0;
 
-/*
-void exec_command(int stage, int *argc, char *argv){
-	int count, file_off = 0;
-	char file[COMM_LEN_MAX];
-	int words = 0;
-	int len = strlen(argv);
-	char main_argv[COMM_LEN_MAX];
-	char *array[COMM_LEN_MAX];
-	
-	if (array == NULL)
-	usage("malloc");
-	for (count = 0; count < len; count++){
-           if (argv[count] == ' '){
-		char *a = calloc(COMM_LEN_MAX, 1);
-		if (a == NULL)
-		  usage("calloc");
-		strcpy(a, file);
-		array[words ] = a;
-        	if(words == 0){
-		strcpy(main_argv, file);
-		}
-	        zero_buf(file);
-                file_off = 0;
-		words++;
-                
-           }else{
-        	file[file_off] = argv[count];
-        	file_off++;
-		if (count == len - 1){
-		      char a[COMM_LEN_MAX];
-        	      strcpy(a, file);
-        	      array[words ] = a;
-		   if (words == 0){
-		        strcpy(main_argv, file);
-			}
-		words++;
-		}
-           }
+int input_redirection(int stage, char *input){
+	int ret = -1;
+	/* Input Redirection */
+	if (stage == 0 && strcmp(input, "original stdin") != 0){
+	    ret = 1;
 	}
-	array[words] = NULL;
-	if (-1 == execvp(main_argv, array))
-		perror(main_argv);
+
+	return ret;
 }
-*/
+
+
 int pipe_stages(Stage *stageArr[COMM_LEN_MAX], int numb_pipes){
 
 	int num, i;
@@ -70,29 +35,43 @@ int pipe_stages(Stage *stageArr[COMM_LEN_MAX], int numb_pipes){
 		exit(EXIT_FAILURE);
 	     }
 	   }
-
+          children++;
 	  if (!(child = fork())){
     	  /* child */
 	    int fd_in, fd_out;
+	    int test_in;
 	    fd_in = STDIN_FILENO; /* default */
 	    fd_out = STDOUT_FILENO;
-	    if( -1 == dup2(old[READ_END], fd_in) ){
-		perror("dup2 old");	
+	    if (-1 != (test_in = input_redirection(i, stageArr[i] -> input)))
+	    {
+		if (-1 == (test_in = open(stageArr[i] -> input, O_RDONLY))){
+		    perror(stageArr[i] -> input);
+		    exit(EXIT_FAILURE);
+		}
+	/*	dup2(test_in, fd_in);*/	
 	    }
-
+	    if (test_in == -1){
+	        if( -1 == dup2(old[READ_END], fd_in) ){
+		     perror("dup2 old");	
+	          }
+	    }else {		
+		if( -1 == dup2(old[READ_END], test_in) ){
+                     perror("dup2 old");
+                  }
+	   }
 	    if( i < num - 1){
 	      /* output redirection */
               if ( -1 == dup2(next[WRITE_END], fd_out)){
 		perror("dup2 new");
 		}
 	    }
-	    /* io_redirection(i, stageArr[i] -> input, stageArr[i] -> output);*/
 	     /* cleaning parent's opened fd's */
 	     close(old[READ_END]);
 	     close(old[WRITE_END]);
 	     close(next[READ_END]);		
   	     close(next[WRITE_END]);
 	     exec_command(i, stageArr[i] -> argc, stageArr[i] -> argv);
+	     exit(EXIT_FAILURE); /* exec failed */
 	}
 	  /* parent */	
 	  close(old[READ_END]);
@@ -103,6 +82,7 @@ int pipe_stages(Stage *stageArr[COMM_LEN_MAX], int numb_pipes){
 	}
 	
 	while ( num-- ){
+	  children--;
 	  if (-1 == wait(NULL)){
 	    perror("wait");
 	  }

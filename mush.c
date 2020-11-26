@@ -17,17 +17,23 @@
 # include "pipe.c"
 # include "parseline.c"
 
+
 # define NO_ERROR 0
 
+void wait_gracefully(){
+       while (children--){
+          if (-1 == wait(NULL)){
+	    fprintf(stderr, "hello\n");
+            perror("wait");
+            exit(EXIT_FAILURE);
+          }
+        }
+
+}
 
 void exit_gracefully(){
 
-	while (children--){
-	  if (-1 == wait(NULL)){
-            perror("wait");
-	    exit(EXIT_FAILURE);
-	  }
-	}
+	wait_gracefully();
         fprintf(stderr, "\n");	
 	exit(EXIT_SUCCESS);
 }
@@ -35,7 +41,6 @@ void exit_gracefully(){
 void read_from_stdin(){
         int current_char;
         while ( (current_char = getchar()) != EOF){
-
         parseline(current_char);
 	
 	fprintf(stderr, "8-P ");
@@ -49,6 +54,8 @@ void read_from_stdin(){
 	else if (errno == EINTR){
 	  /* restore normality*/
 	  errno = NO_ERROR;
+	  if (children > 0)
+	  wait_gracefully();
 	  read_from_stdin();
 	}
 }

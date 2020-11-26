@@ -49,6 +49,6 @@ void exec_command(int stage, int *argc, char *argv){
            }
         }
         array[words] = NULL;
-        if (-1 == execvp(main_argv, array))
-                perror(main_argv);
+        if (-1 == execvp(main_argv, array)){
+                perror(main_argv);}
 }
