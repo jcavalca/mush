@@ -18,12 +18,12 @@
 # include "parseline.c"
 
 
-# define NO_ERROR 0
+
+int interrupt = FALSE;
 
 void wait_gracefully(){
        while (children--){
           if (-1 == wait(NULL)){
-	    fprintf(stderr, "hello\n");
             perror("wait");
             exit(EXIT_FAILURE);
           }
@@ -32,7 +32,6 @@ void wait_gracefully(){
 }
 
 void exit_gracefully(){
-
 	wait_gracefully();
         fprintf(stderr, "\n");	
 	exit(EXIT_SUCCESS);
@@ -41,9 +40,13 @@ void exit_gracefully(){
 void read_from_stdin(){
         int current_char;
         while ( (current_char = getchar()) != EOF){
-        parseline(current_char);
-	
-	fprintf(stderr, "8-P ");
+
+           parseline(current_char);
+	   if (interrupt == FALSE){
+      	       fprintf(stderr, "8-P ");}
+	   else{interrupt = TRUE;}
+
+
         }
 
 	/* EOF */
@@ -63,15 +66,14 @@ void read_from_stdin(){
 void handler(int signum) {
 	if (signum == SIGINT){
 	  /* catch it and continue*/
-	  fprintf(stderr, "\n8-P ");  
-	  fflush(stdout);
+	  fprintf(stderr, "\n8-P ");
+	  interrupt = TRUE; 
 	}
 }
 
 int main(int argc, char *argv[]){	
 
 	struct sigaction sa;
-		
 	 /* first set up the handler */
         sa.sa_handler = handler;
         sigemptyset(&sa.sa_mask);

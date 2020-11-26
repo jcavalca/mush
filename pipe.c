@@ -40,6 +40,7 @@ int pipe_stages(Stage *stageArr[COMM_LEN_MAX], int numb_pipes){
     	  /* child */
 	    int fd_in, fd_out;
 	    int test_in;
+	    int redir_in = FALSE;
 	    fd_in = STDIN_FILENO; /* default */
 	    fd_out = STDOUT_FILENO;
 	    if (-1 != (test_in = input_redirection(i, stageArr[i] -> input)))
@@ -55,9 +56,10 @@ int pipe_stages(Stage *stageArr[COMM_LEN_MAX], int numb_pipes){
 		     perror("dup2 old");	
 	          }
 	    }else {		
-		if( -1 == dup2(old[READ_END], test_in) ){
+		if( -1 == dup2(test_in, STDIN_FILENO) ){
                      perror("dup2 old");
                   }
+		redir_in = TRUE;
 	   }
 	    if( i < num - 1){
 	      /* output redirection */
@@ -68,8 +70,9 @@ int pipe_stages(Stage *stageArr[COMM_LEN_MAX], int numb_pipes){
 	     /* cleaning parent's opened fd's */
 	     close(old[READ_END]);
 	     close(old[WRITE_END]);
+	     if (! redir_in){
 	     close(next[READ_END]);		
-  	     close(next[WRITE_END]);
+  	     close(next[WRITE_END]);}
 	     exec_command(i, stageArr[i] -> argc, stageArr[i] -> argv);
 	     exit(EXIT_FAILURE); /* exec failed */
 	}
@@ -84,7 +87,8 @@ int pipe_stages(Stage *stageArr[COMM_LEN_MAX], int numb_pipes){
 	while ( num-- ){
 	  children--;
 	  if (-1 == wait(NULL)){
-	    perror("wait");
+	    if (errno != EINTR)
+ 	    perror("wait");
 	  }
 	}
 	if (children != num)
