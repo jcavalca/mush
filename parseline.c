@@ -6,17 +6,25 @@ void add_stage(Stage* array[COMM_LEN_MAX], int stage, char *total,
 
 	Stage *new = malloc(sizeof(Stage));
 	int *new_int = malloc(sizeof(int));
+	int *new_argc = malloc(sizeof(int));
+/*
 	char *new_total = malloc(sizeof(total));
 	char *new_input = malloc(sizeof(input));
 	char *new_output = malloc(sizeof(output));
-	int *new_argc = malloc(sizeof(int));
-	char *new_argv = malloc(sizeof(argv));
+	char *new_argv = malloc(sizeof(argv));*/
+
+	char *new_total = malloc(strlen(total) + 1);
+        char *new_input = malloc(strlen(input) + 1);
+        char *new_output = malloc(strlen(output) + 1);
+        char *new_argv = malloc(strlen(argv) + 1);	
+	
+
 
 	/* error checking */	
 	if (new == NULL || new_int == NULL || new_total == NULL ||
 	    new_input == NULL || new_output == NULL || 
 	    new_argc == NULL || new_argv == NULL){
-	perror("");
+	perror("malloc");
 	exit(EXIT_FAILURE);
 	}
 

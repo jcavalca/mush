@@ -52,8 +52,6 @@ void read_from_stdin(){
 	   if (interrupt == FALSE){
       	      if (file_in == FALSE && file_out == FALSE)
 	      fprintf(stderr, "8-P ");}
-	   else{interrupt = TRUE;}
-
 
         }
 
@@ -64,6 +62,7 @@ void read_from_stdin(){
 	/* SIGINT */
 	else if (errno == EINTR){
 	  /* restore normality*/
+	  interrupt = FALSE;
 	  errno = NO_ERROR;
 	  if (children > 0)
 	  wait_gracefully();
