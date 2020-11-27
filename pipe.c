@@ -96,7 +96,7 @@ int pipe_stages(Stage *stageArr[COMM_LEN_MAX], int numb_pipes){
 	     if (redir_in == FALSE){
 	         close(next[READ_END]);		
   	         close(next[WRITE_END]);}
-	     exec_command(i, stageArr[i] -> argc, stageArr[i] -> argv);
+	     exec_command2(i, stageArr[i] -> argc, stageArr[i] -> argv);
 	     exit(EXIT_FAILURE); /* exec failed */
 	}
 	  /* parent */	

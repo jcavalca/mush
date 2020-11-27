@@ -10,44 +10,26 @@ void exec_cd(char *argv){
 	}
 }
 /* implemented by a child */
-void exec_command(int stage, int *argc, char *argv){
-        int count, file_off = 0;
-        char file[COMM_LEN_MAX];
+void exec_command2(int stage, int *argc, char *pass_argv){
         int words = 0;
-        int len = strlen(argv);
         char main_argv[COMM_LEN_MAX];
+	char total[COMM_LEN_MAX];
         char *array[COMM_LEN_MAX];
+	char *token;
+	
+	strcpy(total, pass_argv);	
 
-        if (array == NULL)
-        usage("malloc");
-        for (count = 0; count < len; count++){
-           if (argv[count] == ' '){
-                char *a = calloc(COMM_LEN_MAX, 1);
-                if (a == NULL)
-                  usage("calloc");
-                strcpy(a, file);
-                array[words ] = a;
-                if(words == 0){
-                strcpy(main_argv, file);
-                }
-                zero_buf(file);
-                file_off = 0;
-                words++;
+	token = strtok(total, " ");
 
-           }else{
-                file[file_off] = argv[count];
-                file_off++;
-                if (count == len - 1){
-                      char a[COMM_LEN_MAX];
-                      strcpy(a, file);
-                      array[words ] = a;
-                   if (words == 0){
-                        strcpy(main_argv, file);
-                        }
-                words++;
-                }
-           }
-        }
+	strcpy(main_argv, token);
+	while (token != NULL){
+            char *a = malloc(COMM_LEN_MAX);
+	    strcpy(a, token);
+	    array[words] = a;	
+	    words++;
+	    token = strtok(NULL, " ");
+	}
+
         array[words] = NULL;
         if (-1 == execvp(main_argv, array)){
                 perror(main_argv);}
