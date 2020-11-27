@@ -24,6 +24,17 @@ int output_redirection(int stage, int numb_pipes, char *output){
 	return ret;
 }
 
+void free_stageArr(Stage *stageArr[COMM_LEN_MAX], int numb_pipes){
+	int count;
+	for (count = 0; count < numb_pipes; count++){
+	    free(stageArr[count] -> number);
+	    free(stageArr[count] -> total);
+	    free(stageArr[count] -> input);
+	    free(stageArr[count] -> output);
+	    free(stageArr[count] -> argc);
+	    free(stageArr[count] -> argv);
+	}
+}
 
 int pipe_stages(Stage *stageArr[COMM_LEN_MAX], int numb_pipes){
 
@@ -114,6 +125,7 @@ int pipe_stages(Stage *stageArr[COMM_LEN_MAX], int numb_pipes){
  	    perror("wait");
 	  }
 	}
+	free_stageArr(stageArr, numb_pipes);
 	if (children != num)
 	   return -1;
 	else
