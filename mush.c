@@ -19,14 +19,16 @@
 
 
 
-int interrupt = FALSE;
+/*int interrupt = FALSE;*/
 int file_in = FALSE, file_out = FALSE;
+int parent_pid;
+
 
 void wait_gracefully(){
        while (children--){
-          if (-1 == wait(NULL)){
-            perror("wait");
-            exit(EXIT_FAILURE);
+           if (-1 == wait(NULL)){
+               perror("wait");
+               exit(EXIT_FAILURE);
           }
         }
 
@@ -34,7 +36,8 @@ void wait_gracefully(){
 
 void exit_gracefully(){
 	wait_gracefully();
-        fprintf(stderr, "\n");	
+	if (file_in == FALSE && file_out == FALSE)	
+             fprintf(stderr, "\n");	
 	exit(EXIT_SUCCESS);
 }
 
@@ -43,16 +46,17 @@ void read_from_stdin(){
         while ( (current_char = fgetc(mush_input)) != EOF){
 	   while (current_char == NEW_LINE || current_char == CARRIAGE_RET){
 		if (file_in == FALSE && file_out == FALSE)
-		fprintf(stderr, "8-P ");
+		     fprintf(stderr, "8-P ");
 		current_char = fgetc(mush_input);
 	   }
 	   if (current_char == EOF)
 	       break;
            parseline(current_char);
-	   if (interrupt == FALSE){
+	   if (interrupt == FALSE ){
       	      if (file_in == FALSE && file_out == FALSE)
-	      fprintf(stderr, "8-P ");}
-
+	          fprintf(stderr, "8-P ");
+	}
+	   else{interrupt = FALSE;}
         }
 
 	/* EOF */
@@ -67,20 +71,23 @@ void read_from_stdin(){
 	  if (children > 0)
 	  wait_gracefully();
 	  read_from_stdin();
+	  return;
 	}
 }
 
 void handler(int signum) {
-	if (signum == SIGINT){
-	  /* catch it and continue*/
-	  if (file_in == FALSE && file_out == FALSE)
-	  fprintf(stderr, "\n8-P ");
-	  else{
-	  fprintf(stderr, "\n");
-	  }
-	  interrupt = TRUE; 
-	}
+        if (signum == SIGINT){
+          /* catch it and continue*/
+          interrupt = TRUE;
+          if (file_in == FALSE && file_out == FALSE)
+              fprintf(stderr, "\n8-P ");
+          else{
+               fprintf(stderr, "\n");
+          }
+        }
 }
+
+
 
 void command_parser(int argc, char *argv[], int *in_ptr, int *out_ptr){ 
 	if (!isatty(STDIN_FILENO))
@@ -99,7 +106,7 @@ void command_parser(int argc, char *argv[], int *in_ptr, int *out_ptr){
 	    }
 	}
 	else{
-		if ( argc > 2)
+	     if ( argc > 2)
 		fprintf(stderr, "Usage: mush (input file)\n");
 	}
 
@@ -117,6 +124,10 @@ int main(int argc, char *argv[]){
         if ( -1 == sigaction(SIGINT, &sa, NULL)){
           perror("sigaction");
           exit(EXIT_FAILURE);
+	}
+	if (-1 == (parent_pid = getpid()) ){
+	   perror("getpid");
+	   exit(EXIT_FAILURE);
 	}
 	mush_input = stdin; /* default */
 	command_parser(argc, argv, &file_in, &file_out);

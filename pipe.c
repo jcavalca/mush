@@ -41,9 +41,10 @@ int pipe_stages(Stage *stageArr[COMM_LEN_MAX], int numb_pipes){
 
 	int num, i;
 	int old[2], next[2];
+	int status;
 	pid_t child;
-	
 	num = numb_pipes;
+	
 	if (pipe(old)){
 		perror("pipe");
 		exit(EXIT_FAILURE);
@@ -119,18 +120,24 @@ int pipe_stages(Stage *stageArr[COMM_LEN_MAX], int numb_pipes){
 
 	}
 	
+	/* why not be a good parent */
 	while ( num-- ){
 	  children--;
-	  if (-1 == wait(NULL)){
+	  if (-1 == wait(&status)){
 	    if (errno != EINTR)
- 	    perror("wait");
+	        perror("wait");
+	    /* troublesome kids that got interrupted */
+	    else{
+		if (-1 == wait(&status))
+		   perror("wait");
+		}
 	  }
 	}
+
+	/* finite memory :( */
 	free_stageArr(stageArr, numb_pipes);
-	if (children != num)
-	   return -1;
-	else
-	   return 0;
+
+	return 0;
 }
 
 

@@ -7,11 +7,6 @@ void add_stage(Stage* array[COMM_LEN_MAX], int stage, char *total,
 	Stage *new = malloc(sizeof(Stage));
 	int *new_int = malloc(sizeof(int));
 	int *new_argc = malloc(sizeof(int));
-/*
-	char *new_total = malloc(sizeof(total));
-	char *new_input = malloc(sizeof(input));
-	char *new_output = malloc(sizeof(output));
-	char *new_argv = malloc(sizeof(argv));*/
 
 	char *new_total = malloc(strlen(total) + 1);
         char *new_input = malloc(strlen(input) + 1);
@@ -245,7 +240,7 @@ int parseline(int read_char){
 	if (pipe_stages(stageArr, numb_pipes) != -1)
 	return numb_pipes;
 	else
-	return 0;
+	return -1;
 }
 
 

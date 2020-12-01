@@ -1,6 +1,9 @@
+/*This file contains either shared implementation or shared global variables
+ * that are used by more than one object file. */
+
 FILE *mush_input;
 int children = 0;
-
+int interrupt = FALSE;
 
 void usage(char *name){
 	perror(name);

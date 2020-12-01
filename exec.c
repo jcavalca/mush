@@ -1,4 +1,4 @@
-/* this file has implementation for executing either 
+/* This file has implementation for executing either 
  * cd or general commands*/
 
 /* implemented by a parent */
@@ -6,9 +6,11 @@ void exec_cd(char *argv){
 	char * token = strtok(argv, " ");
 	token = strtok(NULL, " ");
 	if (-1 == chdir(token)){
-		perror(token);	
+	     perror(token);	
 	}
 }
+
+
 /* implemented by a child */
 void exec_command2(int stage, int *argc, char *pass_argv){
         int words = 0;
@@ -32,5 +34,5 @@ void exec_command2(int stage, int *argc, char *pass_argv){
 
         array[words] = NULL;
         if (-1 == execvp(main_argv, array)){
-                perror(main_argv);}
+            perror(main_argv);}
 }
